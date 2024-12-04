@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Text;
@@ -48,8 +49,26 @@ namespace BankingConsole
             AssociateUserWithAccount("VS-100006", new[] { "Ilia", "Vinay" });
             AssociateUserWithAccount("SV-100007", new[] { "Patrick", "Hao" });
         }
+        public static void SaveAccounts(string filename)
+        {
+            var accountList = new List<Account>(ACCOUNTS.Values);
 
-        // Method to add a user
+            string jsonString = JsonSerializer.Serialize(accountList, new JsonSerializerOptions { WriteIndented = true });
+
+            File.WriteAllText(filename, jsonString);
+
+            Console.WriteLine($"Accounts successfully saved to {filename}");
+        }
+        public static void SaveUsers(string filename)
+        {
+            var userList = new List<Person>(USERS.Values);
+
+            string jsonString = JsonSerializer.Serialize(userList, new JsonSerializerOptions { WriteIndented = true });
+
+            File.WriteAllText(filename, jsonString);
+
+            Console.WriteLine($"Users successfully saved to {filename}");
+        }
         public static void AddUser(string name, string sin)
         {
             Person person = new Person(name, sin);
@@ -57,14 +76,12 @@ namespace BankingConsole
             USERS.Add(name, person);
         }
 
-        // Method to add an account
         public static void AddAccount(Account account)
         {
             account.OnTransaction += Logger.TransactionHandler;
             ACCOUNTS.Add(account.Number, account);
         }
 
-        // Method to associate multiple users with an account
         private static void AssociateUserWithAccount(string accountNumber, string[] userNames)
         {
             if (ACCOUNTS.TryGetValue(accountNumber, out var account))
@@ -85,27 +102,12 @@ namespace BankingConsole
                 return account;
             throw new AccountException(ExceptionType.ACCOUNT_DOES_NOT_EXIST);
         }
-
-        // Retrieve a user by name
         public static Person GetUser(string name)
         {
             if (USERS.TryGetValue(name, out var user))
                 return user;
             throw new AccountException(ExceptionType.USER_DOES_NOT_EXIST);
         }
-
-        // Save accounts data (serialization logic can be added here)
-        public static void SaveAccounts(string filename)
-        {
-
-            string jsonString = JsonSerializer.Serialize(accountList, new JsonSerializerOptions { WriteIndented = true });
-        }
-
-        public static void SaveUsers(string filename)
-        {
-            // Serialization logic for saving users to a file (e.g., JSON)
-        }
-
         public static List<Transaction> GetAllTransactions()
         {
             var allTransactions = new List<Transaction>();
